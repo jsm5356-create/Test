@@ -1,9 +1,9 @@
 
 import React, { useState, useRef, useCallback } from 'react';
-import { AppMode, DesignItem } from './types';
-import { generateImageFromPrompt, getFeedbackOnImage } from './services/geminiService';
-import { SparklesIcon, ChatBubbleIcon, UploadIcon } from './components/icons';
-import Loader from './components/Loader';
+import { AppMode, DesignItem } from './types.ts';
+import { generateImageFromPrompt, getFeedbackOnImage } from './services/geminiService.ts';
+import { SparklesIcon, ChatBubbleIcon, UploadIcon } from './components/icons.tsx';
+import Loader from './components/Loader.tsx';
 
 // Helper to convert file to base64
 const fileToBase64 = (file: File): Promise<string> =>
