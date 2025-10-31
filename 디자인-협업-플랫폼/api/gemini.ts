@@ -1,7 +1,3 @@
-// IMPORTANT: To use this file, you must install the @google/genai package
-// in your Vercel project's settings. Go to Settings > General > Install Command
-// and add: npm install @google/genai
-
 // This is a Vercel Serverless Function that acts as a secure backend.
 // It's the only place that will use the API key.
 import { GoogleGenAI, Modality } from "@google/genai";
