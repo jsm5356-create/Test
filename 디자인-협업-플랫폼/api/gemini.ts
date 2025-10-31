@@ -1,21 +1,17 @@
 // This is a Vercel Serverless Function that acts as a secure backend.
 // It's the only place that will use the API key.
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { GoogleGenAI, Modality } from "@google/genai";
 
-// This is a generic handler for Vercel functions.
-// We're using the `any` type for the request and response objects
-// to avoid needing to install extra Vercel/Node types for this simple case.
-export default async function handler(request: any, response: any) {
+export default async function handler(request: VercelRequest, response: VercelResponse) {
   // Only allow POST requests
   if (request.method !== 'POST') {
-    response.status(405).json({ error: 'Method Not Allowed' });
-    return;
+    return response.status(405).json({ error: 'Method Not Allowed' });
   }
   
   const apiKey = process.env.API_KEY;
   if (!apiKey) {
-    response.status(500).json({ error: "API_KEY 환경 변수가 설정되지 않았습니다." });
-    return;
+    return response.status(500).json({ error: "API_KEY 환경 변수가 설정되지 않았습니다." });
   }
 
   const ai = new GoogleGenAI({ apiKey });
@@ -34,14 +30,14 @@ export default async function handler(request: any, response: any) {
           },
         });
         
-        for (const part of geminiResponse.candidates[0].content.parts) {
-          if (part.inlineData) {
-            const base64ImageBytes: string = part.inlineData.data;
-            const imageUrl = `data:${part.inlineData.mimeType};base64,${base64ImageBytes}`;
-            response.status(200).json({ imageUrl });
-            return;
-          }
+        const imagePart = geminiResponse.candidates?.[0]?.content?.parts?.find(part => part.inlineData);
+
+        if (imagePart && imagePart.inlineData) {
+          const base64ImageBytes: string = imagePart.inlineData.data;
+          const imageUrl = `data:${imagePart.inlineData.mimeType};base64,${base64ImageBytes}`;
+          return response.status(200).json({ imageUrl });
         }
+        
         throw new Error("API에서 이미지 데이터를 반환하지 않았습니다.");
       }
 
@@ -62,16 +58,14 @@ export default async function handler(request: any, response: any) {
             contents: { parts: [imagePart, textPart] },
         });
 
-        response.status(200).json({ feedback: geminiResponse.text });
-        return;
+        return response.status(200).json({ feedback: geminiResponse.text });
       }
 
       default:
-        response.status(400).json({ error: 'Invalid request type' });
-        return;
+        return response.status(400).json({ error: 'Invalid request type' });
     }
   } catch (error) {
     console.error("Error in serverless function:", error);
-    response.status(500).json({ error: error instanceof Error ? error.message : "AI 처리 중 서버에서 오류가 발생했습니다." });
+    return response.status(500).json({ error: error instanceof Error ? error.message : "AI 처리 중 서버에서 오류가 발생했습니다." });
   }
 }
