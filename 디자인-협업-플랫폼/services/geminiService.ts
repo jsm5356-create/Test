@@ -1,14 +1,26 @@
-
 import { GoogleGenAI, Modality } from "@google/genai";
 
-if (!process.env.API_KEY) {
-    throw new Error("API_KEY environment variable is not set.");
-}
+// Helper function to get the AI client only when it's needed.
+// This prevents the app from crashing on start if the API key isn't set.
+const getAiClient = () => {
+    let apiKey: string | undefined;
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    // This check prevents a "ReferenceError: process is not defined" in a browser environment.
+    if (typeof process !== 'undefined' && process.env) {
+        apiKey = process.env.API_KEY;
+    }
+
+    if (!apiKey) {
+        // This error will now be caught by the UI and displayed to the user,
+        // instead of crashing the whole app.
+        throw new Error("API 키가 설정되지 않았습니다. 호스팅 환경의 환경 변수를 확인해주세요.");
+    }
+    return new GoogleGenAI({ apiKey });
+};
 
 export const generateImageFromPrompt = async (prompt: string): Promise<string> => {
   try {
+    const ai = getAiClient(); // Initialize client just-in-time
     const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash-image',
         contents: {
@@ -28,12 +40,15 @@ export const generateImageFromPrompt = async (prompt: string): Promise<string> =
     throw new Error("이미지 데이터를 찾을 수 없습니다.");
   } catch (error) {
     console.error("Error generating image:", error);
+    // Re-throw the error so the UI can catch and display it.
+    if (error instanceof Error) throw error;
     throw new Error("AI 이미지 생성에 실패했습니다. 다시 시도해 주세요.");
   }
 };
 
 export const getFeedbackOnImage = async (base64Image: string, mimeType: string): Promise<string> => {
   try {
+    const ai = getAiClient(); // Initialize client just-in-time
     const imagePart = {
       inlineData: {
         mimeType,
@@ -53,6 +68,8 @@ export const getFeedbackOnImage = async (base64Image: string, mimeType: string):
     return response.text;
   } catch (error) {
     console.error("Error getting feedback:", error);
+    // Re-throw the error so the UI can catch and display it.
+    if (error instanceof Error) throw error;
     throw new Error("AI 피드백 생성에 실패했습니다. 다시 시도해 주세요.");
   }
 };
