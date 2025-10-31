@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>디자인 협업 플랫폼</title>
     <script>
-      // Polyfill `process` for browser environments to prevent crashes from libraries
-      // that expect a Node.js environment. This MUST come before any other scripts.
+      // Polyfill `process` for browser environments. While the GenAI SDK is moved to the backend,
+      // other libraries might still expect this. It's good practice to keep it.
       window.process = window.process || { env: {} };
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 1. Add Babel to translate .tsx files -->
+    <!-- Babel is still needed to transpile JSX and TypeScript in the browser -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <style>
       /* Custom scrollbar for a more modern look */
@@ -42,8 +42,8 @@
 </head>
   <body class="bg-slate-900 text-slate-200">
     <div id="root"></div>
-    <!-- 2. Load the main app script, telling Babel to transpile it with React and TypeScript presets -->
-    <script data-presets="react,typescript" data-type="module" type="text/babel" src="./index.tsx"></script>
+    <!-- Load the main app script, telling Babel to transpile it -->
+    <script data-presets="react,typescript" type="text/babel" data-type="module" src="./index.tsx"></script>
   <script type="module" src="/index.tsx"></script>
 </body>
 </html>
